@@ -76,25 +76,38 @@ void schedule_task(struct task *task)
 	}
 #endif
 
-	if (task)
+	if (task) {
 		switch_task(task);
-	else {
+		previous_task = get_previous_task();
+		current_task = get_current_task();
+
+		if (previous_task)
+			swapcontext(&previous_task->context, &current_task->context);
+		else
+			setcontext(&current_task->context);
+	} else {
 #ifdef SCHEDULE_ROUND_ROBIN
 		if (!t || !t->quantum || (t->state == TASK_BLOCKED)) {
 			t = find_next_task();
 			switch_task(t);
+			previous_task = get_previous_task();
+			current_task = get_current_task();
+
+			if (previous_task)
+				swapcontext(&previous_task->context, &current_task->context);
+			else
+				setcontext(&current_task->context);
 		}
 #elif defined(SCHEDULE_PRIORITY)
 		t = find_next_task();
 		switch_task(t);
+		previous_task = get_previous_task();
+		current_task = get_current_task();
+
+		if (previous_task)
+			swapcontext(&previous_task->context, &current_task->context);
+		else
+			setcontext(&current_task->context);
 #endif
 	}
-
-	previous_task = get_previous_task();
-	current_task = get_current_task();
-
-	if (previous_task)
-		swapcontext(&previous_task->context, &current_task->context);
-	else
-		setcontext(&current_task->context);
 }
