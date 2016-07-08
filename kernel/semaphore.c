@@ -67,7 +67,7 @@ void svc_sem_wait(struct semaphore *sem)
 
 		sem->waiting++;
 		
-		raise(SIGALRM);
+		schedule_task(NULL);
 	}
 }
 
@@ -90,7 +90,7 @@ void svc_sem_post(struct semaphore *sem)
 		sem->count--;
 
 		insert_runnable_task(task);
-		raise(SIGALRM);
+		schedule_task(task);
 
 	} else {
 		if (sem->count == 0)
