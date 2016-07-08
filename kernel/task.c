@@ -116,7 +116,8 @@ void switch_task(struct task *task)
 	if (task->pid != 0)
 		remove_runnable_task(task);
 
-	printf("switching task, prev task: %#x, curr task: %#x\n", previous_task, current_task);
+	if (previous_task)
+		printf("switching task, prev task: %d [%#x], curr task: %d [%#x]\n", previous_task->pid, previous_task, current_task->pid, current_task);
 }
 
 struct task *get_current_task(void)
