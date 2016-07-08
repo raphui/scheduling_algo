@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <signal.h>
 
 #include <semaphore.h>
 #include <task.h>
@@ -66,7 +67,7 @@ void svc_sem_wait(struct semaphore *sem)
 
 		sem->waiting++;
 		
-		schedule_task(NULL);
+		raise(SIGALRM);
 	}
 }
 
@@ -89,7 +90,7 @@ void svc_sem_post(struct semaphore *sem)
 		sem->count--;
 
 		insert_runnable_task(task);
-		schedule_task(task);
+		raise(SIGALRM);
 
 	} else {
 		if (sem->count == 0)

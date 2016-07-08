@@ -18,35 +18,26 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <unistd.h>
 
 #include <semaphore.h>
 #include <scheduler.h>
 
 static struct semaphore sem;
-static pthread_t tick;
-
-void tick_thread(void)
-{
-	while (1) {
-		schedule_task(NULL);
-		usleep(100000);	
-	}
-}
 
 void first_task(void)
 {
 	int i = 0;
 
-	printf("plop\n");
 	sem_wait(&sem);
 	while (1) {
-		printf("A");
-		if (i++ == 30) {
+//		printf("A");
+#if defined(SCHEDULE_PRIORITY) || defined(SCHEDULE_ROUND_ROBIN)
+		if (i++ == 10) {
 			sem_wait(&sem);
 			i = 0;
 		}
+#endif
 	}
 }
 
@@ -55,9 +46,13 @@ void second_task(void)
 	int i = 0;
 
 	while (1) {
-		printf("B");
-		if (i++ == 40) {
+//		printf("B");
+		if (i++ == 20) {
+#if defined(SCHEDULE_PRIORITY) || defined(SCHEDULE_ROUND_ROBIN)
 			sem_post(&sem);
+//#elif defined(SCHEDULE_ROUND_ROBIN)
+//			sem_wait(&sem);
+#endif
 			i = 0;
 		}
 	}
@@ -75,9 +70,8 @@ int main(int argc, char **argv)
 	add_task(&first_task, 10);
 	add_task(&second_task, 3);
 
-	printf("start tick_thread\n");
-	pthread_create(&tick, NULL, tick_thread, NULL);
-
+	printf("start scheduling\n");
+	start_schedule();
 
 	while (1)
 		;

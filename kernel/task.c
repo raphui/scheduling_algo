@@ -117,16 +117,16 @@ void switch_task(struct task *task)
 		remove_runnable_task(task);
 
 	printf("switching task, prev task: %#x, curr task: %#x\n", previous_task, current_task);
-
-	if (previous_task)
-		swapcontext(&previous_task->context, &current_task->context);
-	else
-		setcontext(&current_task->context);
 }
 
 struct task *get_current_task(void)
 {
 	return current_task;
+}
+
+struct task *get_previous_task(void)
+{
+	return previous_task;
 }
 
 struct task *find_next_task(void)

@@ -24,7 +24,10 @@
 extern int task_switching;
 extern unsigned int system_tick;
 
+void tick_thread(void);
+
 int schedule_init(void);
+void start_schedule(void);
 void schedule(void);
 void schedule_task(struct task *task);
 

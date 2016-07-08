@@ -18,11 +18,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <errno.h>
 
 #include <task.h>
 
 int task_switching = 0;
 unsigned int system_tick = 0;
+
+void tick_handler(int signum)
+{
+	schedule_task(NULL);
+}
 
 int schedule_init(void)
 {
@@ -31,6 +39,18 @@ int schedule_init(void)
 	task_init();
 
 	return ret;
+}
+
+void start_schedule(void)
+{
+	struct itimerval timer;
+
+	memset(&timer, 0, sizeof(struct itimerval));
+	signal(SIGALRM, &tick_handler);
+
+	timer.it_interval.tv_usec = 100000;
+	timer.it_value.tv_usec = 100000;
+	setitimer(ITIMER_REAL, &timer, NULL);
 }
 
 void schedule(void)
@@ -45,6 +65,8 @@ void schedule(void)
 void schedule_task(struct task *task)
 {
 	struct task *t;
+	struct task *previous_task;
+	struct task *current_task;
 
 #ifdef SCHEDULE_ROUND_ROBIN
 	t = get_current_task();
@@ -67,4 +89,12 @@ void schedule_task(struct task *task)
 		switch_task(t);
 #endif
 	}
+
+	previous_task = get_previous_task();
+	current_task = get_current_task();
+
+	if (previous_task)
+		swapcontext(&previous_task->context, &current_task->context);
+	else
+		setcontext(&current_task->context);
 }
