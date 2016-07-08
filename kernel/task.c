@@ -133,7 +133,20 @@ struct task *find_next_task(void)
 {
 	struct task *task = NULL;
 
+#ifdef SCHEDULE_PRIORITY
 	task = LIST_FIRST(&runnable_tasks);
+#elif defined(SCHEDULE_ROUND_ROBIN)
+	LIST_FOREACH(task, &runnable_tasks, next)
+		if ((task->quantum > 0) && (task->pid != 0))
+			break;
+
+	if (current_task)
+		current_task->quantum = TASK_QUANTUM;
+
+	/* Only idle task is eligible */
+	if (!task)
+		task = LIST_FIRST(&runnable_tasks);
+#endif
 
 	printf("next task: %d\r\n", task->pid);
 

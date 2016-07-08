@@ -48,15 +48,17 @@ void schedule_task(struct task *task)
 
 #ifdef SCHEDULE_ROUND_ROBIN
 	t = get_current_task();
-	if (t)
+	if (t) {
 		t->quantum--;
+		printf("task [%#x] quantum at %d\n", t, t->quantum);
+	}
 #endif
 
 	if (task)
 		switch_task(task);
 	else {
 #ifdef SCHEDULE_ROUND_ROBIN
-		if (!t || !t->quantum) {
+		if (!t || !t->quantum || (t->state == TASK_BLOCKED)) {
 			t = find_next_task();
 			switch_task(t);
 		}

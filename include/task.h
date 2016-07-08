@@ -30,7 +30,7 @@
 #define TASK_INTERRUPTIBLE	3
 #define TASK_BLOCKED		4
 
-#define TASK_QUANTUM		150
+#define TASK_QUANTUM		25
 #define TASK_STACK_SIZE		64 * 1024
 
 struct task
