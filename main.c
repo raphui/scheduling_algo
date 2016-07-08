@@ -32,12 +32,10 @@ void first_task(void)
 	sem_wait(&sem);
 	while (1) {
 //		printf("A");
-#if defined(SCHEDULE_PRIORITY) || defined(SCHEDULE_ROUND_ROBIN)
 		if (i++ == 10) {
 			sem_wait(&sem);
 			i = 0;
 		}
-#endif
 	}
 }
 
@@ -47,12 +45,8 @@ void second_task(void)
 
 	while (1) {
 //		printf("B");
-		if (i++ == 20) {
-#if defined(SCHEDULE_PRIORITY) || defined(SCHEDULE_ROUND_ROBIN)
+		if (i++ == 50) {
 			sem_post(&sem);
-//#elif defined(SCHEDULE_ROUND_ROBIN)
-//			sem_wait(&sem);
-#endif
 			i = 0;
 		}
 	}
