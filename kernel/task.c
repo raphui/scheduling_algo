@@ -162,5 +162,8 @@ void insert_runnable_task(struct task *task)
 
 void remove_runnable_task(struct task *task)
 {
+#ifdef SCHEDULE_ROUND_ROBIN
+	current_task->quantum = TASK_QUANTUM;
+#endif
 	LIST_REMOVE(task, next);
 }
