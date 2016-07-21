@@ -43,7 +43,7 @@ struct task
 	unsigned int delay;
 	ucontext_t context;
 	void (*func)(void);
-	LIST_ENTRY(task) next;
+	struct list node next;
 };
 
 void task_init(void);

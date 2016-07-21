@@ -29,13 +29,13 @@ void first_task(void)
 {
 	int i = 0;
 
-	sem_wait(&sem);
+//	sem_wait(&sem);
 	while (1) {
 //		printf("A");
-		if (i++ == 10) {
-			sem_wait(&sem);
-			i = 0;
-		}
+//		if (i++ == 10) {
+//			sem_wait(&sem);
+//			i = 0;
+//		}
 	}
 }
 
@@ -45,10 +45,10 @@ void second_task(void)
 
 	while (1) {
 //		printf("B");
-		if (i++ == 50) {
-			sem_post(&sem);
-			i = 0;
-		}
+//		if (i++ == 50) {
+//			sem_post(&sem);
+//			i = 0;
+//		}
 	}
 }
 
