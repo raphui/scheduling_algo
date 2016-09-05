@@ -29,13 +29,12 @@ void first_task(void)
 {
 	int i = 0;
 
-//	sem_wait(&sem);
+	sem_wait(&sem);
 	while (1) {
-//		printf("A");
-//		if (i++ == 10) {
-//			sem_wait(&sem);
-//			i = 0;
-//		}
+		if (i++ == 20) {
+			sem_wait(&sem);
+			i = 0;
+		}
 	}
 }
 
@@ -44,12 +43,36 @@ void second_task(void)
 	int i = 0;
 
 	while (1) {
-//		printf("B");
-//		if (i++ == 50) {
-//			sem_post(&sem);
-//			i = 0;
-//		}
+		if (i++ == 200000) {
+			sem_wait(&sem);
+			i = 0;
+			sem_post(&sem);
+		}
 	}
+}
+
+void third_task(void)
+{
+	int i = 0;
+
+	while (1) {
+		if (i++ == 1500000) {
+			sem_post(&sem);
+			i = 0;
+		}
+	}
+}
+
+void fourth_task(void)
+{
+	while (1)
+		;
+}
+
+void fifth_task(void)
+{
+	while (1)
+		;
 }
 
 int main(int argc, char **argv)
@@ -62,7 +85,10 @@ int main(int argc, char **argv)
 
 	printf("adding task\n");
 	add_task(&first_task, 10);
-	add_task(&second_task, 3);
+	add_task(&second_task, 10);
+	add_task(&third_task, 6);
+	add_task(&fourth_task, 5);
+	add_task(&fifth_task, 3);
 
 	printf("start scheduling\n");
 	start_schedule();

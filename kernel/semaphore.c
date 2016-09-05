@@ -21,10 +21,10 @@
 #include <scheduler.h>
 #include <stdio.h>
 
-#define DEBUG	1
+#define DEBUG	0
 #define debug_printk(...) do{ if(DEBUG){ printf(__VA_ARGS__); } }while(0)
 
-#define VERBOSE	1
+#define VERBOSE	0
 #define verbose_printk(...) do{ if(VERBOSE){ printf(__VA_ARGS__); } }while(0)
 
 static void insert_waiting_task(struct semaphore *sem, struct task *t)
@@ -79,7 +79,6 @@ void sem_wait(struct semaphore *sem)
 		current_task = get_current_task();
 		current_task->state = TASK_BLOCKED;
 
-		remove_runnable_task(current_task);
 		insert_waiting_task(sem, current_task);
 
 		sem->waiting++;

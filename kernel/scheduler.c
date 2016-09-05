@@ -76,7 +76,7 @@ void schedule_task(struct task *task)
 	struct task *previous_task;
 	struct task *current_task;
 
-#ifdef SCHEDULE_ROUND_ROBIN
+#if defined(SCHEDULE_ROUND_ROBIN) || defined(SCHEDULE_PREEMPT)
 	t = get_current_task();
 	if (t) {
 		t->quantum--;
@@ -85,6 +85,11 @@ void schedule_task(struct task *task)
 #endif
 
 	if (task) {
+		current_task = get_current_task();
+		if (current_task && (current_task->state != TASK_BLOCKED)) {
+			insert_runnable_task(current_task);
+		}
+
 		switch_task(task);
 		previous_task = get_previous_task();
 		current_task = get_current_task();
@@ -94,7 +99,18 @@ void schedule_task(struct task *task)
 		else
 			setcontext(&current_task->context);
 	} else {
-#ifdef SCHEDULE_ROUND_ROBIN
+#ifdef SCHEDULE_PREEMPT
+		t = find_next_task();
+		switch_task(t);
+		previous_task = get_previous_task();
+		current_task = get_current_task();
+
+		if (previous_task)
+			swapcontext(&previous_task->context, &current_task->context);
+		else
+			setcontext(&current_task->context);
+			
+#elif defined(SCHEDULE_ROUND_ROBIN)
 		if (!t || !t->quantum || (t->state == TASK_BLOCKED)) {
 			t = find_next_task();
 			switch_task(t);
