@@ -19,10 +19,12 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include <stddef.h>
 #include <ucontext.h>
 
 #include <list.h>
+#include <stddef.h>
+
+#define NR_TASK	8
 
 #define TASK_RUNNING		0
 #define TASK_RUNNABLE		1
@@ -33,6 +35,8 @@
 #define TASK_QUANTUM		25
 #define TASK_STACK_SIZE		64 * 1024
 
+extern unsigned long task_lock;
+
 struct task
 {
 	unsigned int state;
@@ -41,17 +45,18 @@ struct task
 	unsigned int quantum;
 	unsigned int start_stack;
 	unsigned int delay;
-	ucontext_t context;
 	void (*func)(void);
-	struct list node next;
+	ucontext_t context;
+	struct list_node node;
+	struct list_node event_node;
 };
 
 void task_init(void);
 void add_task(void (*func)(void), unsigned int priority);
 void first_switch_task(void);
 void switch_task(struct task *task);
-struct task *get_current_task(void);
 struct task *get_previous_task(void);
+struct task *get_current_task(void);
 struct task *find_next_task(void);
 void insert_runnable_task(struct task *task);
 void remove_runnable_task(struct task *task);

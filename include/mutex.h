@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015  Raphaël Poggi <poggi.raph@gmail.com>
+ * Copyright (C) 2014  Raphaël Poggi <poggi.raph@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,20 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#ifndef MUTEX_H
+#define MUTEX_H
 
+#include <task.h>
 #include <list.h>
 
-struct semaphore {
-	unsigned int value;
-	unsigned int count;
+struct mutex {
+	unsigned char lock;
+	struct task *owner;
 	unsigned int waiting;
 	struct list_node waiting_tasks;
 };
 
-void init_semaphore(struct semaphore *sem, unsigned int value);
-void sem_wait(struct semaphore *sem);
-void sem_post(struct semaphore *sem);
+void mutex_lock_isr(struct mutex *mutex);
+void mutex_unlock_isr(struct mutex *mutex);
+void svc_mutex_lock(struct mutex *mutex);
+void svc_mutex_unlock(struct mutex *mutex);
+void mutex_lock(struct mutex *mutex);
+void mutex_unlock(struct mutex *mutex);
+void init_mutex(struct mutex *mutex);
 
-#endif /* SEMAPHORE_H */
+#endif /* MUTEX_H */

@@ -21,8 +21,16 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <string.h>
 
 #include <task.h>
+#include <scheduler.h>
+
+#define DEBUG	0
+#define debug_printk(...) do{ if(DEBUG){ printf(__VA_ARGS__); } }while(0)
+
+#define VERBOSE	0
+#define verbose_printk(...) do{ if(VERBOSE){ printf(__VA_ARGS__); } }while(0)
 
 int task_switching = 0;
 unsigned int system_tick = 0;
@@ -72,7 +80,7 @@ void schedule_task(struct task *task)
 	t = get_current_task();
 	if (t) {
 		t->quantum--;
-		printf("task [%#x] quantum at %d\n", t, t->quantum);
+		debug_printk("task [%p] quantum at %d\n", t, t->quantum);
 	}
 #endif
 
