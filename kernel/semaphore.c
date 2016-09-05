@@ -21,7 +21,7 @@
 #include <scheduler.h>
 #include <stdio.h>
 
-#define DEBUG	0
+#define DEBUG	1
 #define debug_printk(...) do{ if(DEBUG){ printf(__VA_ARGS__); } }while(0)
 
 #define VERBOSE	0
@@ -55,6 +55,14 @@ static void insert_waiting_task(struct semaphore *sem, struct task *t)
 static void remove_waiting_task(struct semaphore *sem, struct task *t)
 {
 	list_delete(&t->event_node);
+}
+
+static void flush_waiting_task(struct semaphore *sem)
+{
+	struct task *task;
+
+	list_for_every_entry(&sem->waiting_tasks, task, struct task, event_node)
+		list_clear_node(&task->event_node);
 }
 
 void init_semaphore(struct semaphore *sem, unsigned int value)
@@ -93,7 +101,7 @@ void sem_post(struct semaphore *sem)
 	struct task *task;
 
 	if (sem->waiting) {
-		debug_printk("tasks are waiting for sem (%p)\r\n", sem);
+		debug_printk("%d tasks are waiting for sem (%p)\r\n", sem->waiting, sem);
 
 		sem->waiting--;
 		sem->count--;
@@ -104,6 +112,8 @@ void sem_post(struct semaphore *sem)
 
 			remove_waiting_task(sem, task);
 			insert_runnable_task(task);
+			flush_waiting_task(sem);
+			sem->waiting = 0;
 		}
 
 	} else {
