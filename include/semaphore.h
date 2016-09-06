@@ -22,8 +22,8 @@
 #include <list.h>
 
 struct semaphore {
-	unsigned int value;
-	unsigned int count;
+	int value;
+	int count;
 	unsigned int waiting;
 	struct list_node waiting_tasks;
 };

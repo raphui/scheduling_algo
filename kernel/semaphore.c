@@ -31,38 +31,20 @@ static void insert_waiting_task(struct semaphore *sem, struct task *t)
 {
 	struct task *task;
 
-	if (sem->waiting) {
-		list_for_every_entry(&sem->waiting_tasks, task, struct task, event_node) {
-#ifdef SCHEDULE_ROUND_ROBIN
-			if (!list_next(&sem->waiting_tasks, &task->event_node)) {
-				list_add_after(&task->event_node, &t->event_node);
-				break;
-			}
+#if defined(SCHEDULE_ROUND_ROBIN) || defined(SCHEDULE_PREEMPT)
+		list_add_tail(&sem->waiting_tasks, &t->event_node);
 #elif defined(SCHEDULE_PRIORITY)
+		list_for_every_entry(&sem->waiting_tasks, task, struct task, event_node)
 			if (t->priority > task->priority)
 				list_add_before(&task->event_node, &t->event_node);
 
 #endif
-		}
-
-	} else {
-		list_add_head(&sem->waiting_tasks, &t->event_node);
-	}
-
 
 }
 
 static void remove_waiting_task(struct semaphore *sem, struct task *t)
 {
 	list_delete(&t->event_node);
-}
-
-static void flush_waiting_task(struct semaphore *sem)
-{
-	struct task *task;
-
-	list_for_every_entry(&sem->waiting_tasks, task, struct task, event_node)
-		list_clear_node(&task->event_node);
 }
 
 void init_semaphore(struct semaphore *sem, unsigned int value)
@@ -78,21 +60,16 @@ void sem_wait(struct semaphore *sem)
 {
 	struct task *current_task;
 
-	if (sem->count < sem->value) {
-		debug_printk("sem (%p) got\r\n", sem);
-		sem->count++;
-	} else {
-		debug_printk("unable to got sem (%p)\r\n", sem);
+	if (--sem->count < 0) {
+		debug_printk("unable to got sem (%p)(%d)\r\n", sem, sem->count);
 
 		current_task = get_current_task();
 		current_task->state = TASK_BLOCKED;
 
 		insert_waiting_task(sem, current_task);
-
 		sem->waiting++;
 
 		schedule_task(NULL);
-
 	}
 }
 
@@ -100,28 +77,22 @@ void sem_post(struct semaphore *sem)
 {
 	struct task *task;
 
-	if (sem->waiting) {
-		debug_printk("%d tasks are waiting for sem (%p)\r\n", sem->waiting, sem);
+	sem->count++;
 
-		sem->waiting--;
-		sem->count--;
+	if (sem->count > sem->value)
+		sem->count = sem->value;
 
+	if (sem->count <= 0) {
 		if (!list_is_empty(&sem->waiting_tasks)) {
+			sem->waiting--;
+
 			task = list_peek_head_type(&sem->waiting_tasks, struct task, event_node);
 			task->state = TASK_RUNNABLE;
 
+			debug_printk("waking up task: %d\n", task->pid);
+
 			remove_waiting_task(sem, task);
 			insert_runnable_task(task);
-			flush_waiting_task(sem);
-			sem->waiting = 0;
 		}
-
-	} else {
-		if (sem->count == 0)
-			debug_printk("all sem (%p) token has been post\r\n", sem);
-		else
-			sem->count--;
-
-		debug_printk("sem (%p) post\r\n", sem);
 	}
 }
