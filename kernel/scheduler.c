@@ -84,12 +84,12 @@ void schedule_task(struct task *task)
 	}
 #endif
 
-	if (task) {
-		current_task = get_current_task();
-		if (current_task && (current_task->state != TASK_BLOCKED)) {
-			insert_runnable_task(current_task);
-		}
+	current_task = get_current_task();
+	if (current_task && (current_task->state != TASK_BLOCKED)) {
+		insert_runnable_task(current_task);
+	}
 
+	if (task) {
 		switch_task(task);
 		previous_task = get_previous_task();
 		current_task = get_current_task();

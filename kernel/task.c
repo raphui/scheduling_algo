@@ -144,7 +144,7 @@ void switch_task(struct task *task)
 	if (task->pid != 0)
 		remove_runnable_task(task);
 
-	printf("%c(%d)\n", c + current_task->pid, current_task->pid);
+	printf("%c(%d)(%d)\n", c + current_task->pid, current_task->pid, current_task->quantum);
 }
 
 struct task *get_previous_task(void)
@@ -170,7 +170,11 @@ struct task *find_next_task(void)
 		next_queue = HIGHEST_PRIORITY - __builtin_clz(bitmap) 
 			- (sizeof(run_queue_bitmap) * 8 - MAX_PRIORITIES);
 
+		debug_printk("next_queue: %d\n", next_queue);
+
 		list_for_every_entry(&run_queue[next_queue], task, struct task, node) {
+
+			debug_printk("next task: %d\n", task->pid);
 			if (list_is_empty(&run_queue[next_queue]))
 				run_queue_bitmap &= ~(1 << next_queue);
 
@@ -209,8 +213,10 @@ void insert_runnable_task(struct task *task)
 #ifdef SCHEDULE_PREEMPT
 	if (task->quantum > 0)
 		insert_in_run_queue_head(task);
-	else
+	else {
+		task->quantum = TASK_QUANTUM;
 		insert_in_run_queue_tail(task);
+	}
 #else
 	insert_task(task);
 #endif
